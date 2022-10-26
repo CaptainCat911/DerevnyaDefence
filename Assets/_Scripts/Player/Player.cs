@@ -8,16 +8,19 @@ public class Player : Fighter
     private NavMeshAgent agent;
     private Animator anim;
 
+    // Для прицела
+    [Header("Ссылка на курсор")]
+    public Transform pointer;                   // прицел       
+    bool aiming = true;                         // прицеливание   
+    public LayerMask cursorLayerMask;           // маска для прицела   
+
     // Перемещение
-    Vector2 input;
-    Vector3 movementVector;
+    Vector2 input;                                          // вектор для приёма значений с клавиатуры (WASD)
+    Vector3 movementVector;                                 // вектор перемещения    
+    public float locomationAnimationSmoothTime = 0.1f;      // сглаживания скорости перемещения для анимации
 
-    /*// Для прицела
-    public Transform pointer;           // прицел       
-    public bool aiming = true;          // прицеливание   
-    public LayerMask layerMask;         // маска для прицела   */
 
-    //---------------------------------------------------------------------------------------------------------------------------------------------------------\\
+//---------------------------------------------------------------------------------------------------------------------------------------------------------\\
 
 
     void Start()
@@ -27,10 +30,14 @@ public class Player : Fighter
         anim = GetComponent<Animator>();    
     }
 
-    //---------------------------------------------------------------------------------------------------------------------------------------------------------\\
+//---------------------------------------------------------------------------------------------------------------------------------------------------------\\
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            
+        }
 
         float x = Input.GetAxis("Horizontal");          // принимаем значения осей (управление с клавиатуры (A,D))
         float z = Input.GetAxis("Vertical");            // принимаем значения осей (управление с клавиатуры (W,S))
@@ -38,73 +45,65 @@ public class Player : Fighter
         input.Normalize();                              // нормализируем, чтобы по диагонали оставалось значение 1
         UpdateMotor(input);                             // вызываем функцию движения (возможно нужно перенести в FixedUpdate)
 
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            
-        }
-
-
-
-        /*//-------------------------- Прицел -----------------------\\
-        //Ray ray1 = new Ray(transform.position, transform.forward);
+        //-------------------------- Прицел -----------------------\\
+        
         Ray ray1 = Camera.main.ScreenPointToRay(Input.mousePosition);
-        //Debug.DrawRay(transform.position, transform.forward * 100f, Color.yellow);
+        Debug.DrawRay(transform.position, transform.forward * 100f, Color.yellow);
         RaycastHit hit;
-        if (Physics.Raycast(ray1, out hit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(ray1, out hit, Mathf.Infinity, cursorLayerMask))
         {
-            *//*            var direction = hit.point - transform.position;
-                        direction.y = 0f;
-                        direction.Normalize();
-                        transform.forward = direction;*//*
-
+            Vector3 direction = hit.point - transform.position;
+            direction.y = 0f;
+            direction.Normalize();
+            transform.forward = direction;
             pointer.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
 
-            //hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.yellow;           
-            
+            //hit.collider.gameObject.GetComponent<Renderer>().material.color = Color.yellow;
             //Material mat1 = hit.collider.gameObject.GetComponent<Renderer>().material;            
             //ChangeAlpha(mat1, 0.5f);
-        }              
+        }
 
-        if (aiming)         // или weapon.attacking
+        if (aiming)         
+        {            
+            Vector3 lookDir = pointer.position - transform.position;                                        
+            float angle = Mathf.Atan2(lookDir.x, lookDir.z) * Mathf.Rad2Deg;                                            // Находим угол 
+            //float angleRound = Mathf.Round(angle);        
+            Quaternion qua1 = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);                // Устанавливаем этот угол            
+            transform.rotation = Quaternion.Lerp(transform.rotation, qua1, Time.fixedDeltaTime * agent.angularSpeed);   // Делаем Lerp  (НЕ РАБОТАЕТ ПОЧЕМУ ТО)
+        }
+
+/*        // Для разворота без прицеливания
+
+        if (aiming == false && (x != 0 || z != 0))
         {
-            // Находим угол 
-            Vector3 lookDir = pointer.position - transform.position;
-            float angle = Mathf.Atan2(lookDir.x, lookDir.z) * Mathf.Rad2Deg;
-            //float angleRound = Mathf.Round(angle);
+            // Находим угол             
+            float angle = Mathf.Atan2(motorVect.x, motorVect.z) * Mathf.Rad2Deg;
 
             // Устанавливаем этот угол
-            Quaternion qua1 = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
+            qua1 = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
 
             // Делаем Lerp      
-            transform.rotation = Quaternion.Lerp(transform.rotation, qua1, Time.fixedDeltaTime * 15f);            
+            transform.rotation = Quaternion.Lerp(transform.rotation, qua1, Time.fixedDeltaTime * 15f);
         }*/
     }
 
 
     private void FixedUpdate()
     {      
-        /*
-       // Для разворота без прицеливания
 
-       if (aiming == false && (x != 0 ||  z != 0) && !weapon.attacking)
-       {          
-               // Находим угол             
-           float angle = Mathf.Atan2(motorVect.x, motorVect.z) * Mathf.Rad2Deg;            
-
-               // Устанавливаем этот угол
-           qua1 = Quaternion.Euler(transform.eulerAngles.x, angle, transform.eulerAngles.z);
-
-               // Делаем Lerp      
-           transform.rotation = Quaternion.Lerp(transform.rotation, qua1, Time.fixedDeltaTime * 15f);
-       }
-       */
     }
 
     void UpdateMotor(Vector2 input)             
     {
-        movementVector = new Vector3(input.x * moveSpeed, 0, input.y * moveSpeed);      // создаем вектор куда нужно переместится        
-        agent.Move(movementVector * Time.deltaTime);                                    // перемещаем с учётом дельтаТайм
+        movementVector = new Vector3(input.x * agent.speed, 0, input.y * agent.speed);                      // создаем вектор куда нужно переместится        
+        agent.Move(movementVector * Time.deltaTime);                                                        // перемещаем с учётом дельтаТайм
+
+        // Для анимаций
+        float velocityX = Vector3.Dot(movementVector.normalized, transform.right);                          // вычисляем скорость по горизонтали (x) 
+        float velocityZ = Vector3.Dot(movementVector.normalized, transform.forward);                        // вычисляем скорость по вертикали (z) 
+        anim.SetFloat("speedPlayerX", velocityX, locomationAnimationSmoothTime, Time.deltaTime);            // анимация скорости по x 
+        anim.SetFloat("speedPlayerZ", velocityZ, locomationAnimationSmoothTime, Time.deltaTime);            // анимация скорости по z
+        anim.SetFloat("speed", movementVector.magnitude, locomationAnimationSmoothTime, Time.deltaTime);    // анимация скорости общей, чтобы менять бег и ходьбу        
     }
 
 

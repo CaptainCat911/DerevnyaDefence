@@ -6,8 +6,7 @@ public class Fighter : MonoBehaviour
 {
     public bool isAlive = true;
     public int currentHealth;
-    public int maxHealth;
-    public float moveSpeed;
+    public int maxHealth;    
 
     void Awake()
     {
