@@ -6,13 +6,11 @@ public class Player : Fighter
 {
     // Ссылки
     NavMeshAgent agent;
-    [HideInInspector]
-    public Animator anim;
-
-    // Для прицела
+    [HideInInspector] public Animator anim;
+    
     [Header("Параметры курсора")]
     public Transform pointer;                       // прицел               
-    public bool aiming = true;                             // прицеливание         
+    public bool aiming = true;                      // прицеливание         
     public LayerMask cursorLayerMask;               // маска для прицела   
 
     // Перемещение

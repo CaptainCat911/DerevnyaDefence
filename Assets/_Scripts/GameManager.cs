@@ -3,7 +3,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
-    public static GameManager instance;         // инстанс (объект одиночка ?)
+    public static GameManager instance;         // инстанс
 
     [Header("Ссылки")]
     [Tooltip("Ссылка на игрока")]
@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public Terrain terrain;                     // ссылка на террейн   
 
 
-    //---------------------------------------------------------------------------------------------------------------------------------------------------------\\
+//---------------------------------------------------------------------------------------------------------------------------------------------------------\\
 
 
     private void Awake()
@@ -20,8 +20,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);            
             return;
-        }
-        // присваем instance (?) этому обьекту и по ивенту загрузки запускаем функцию загрузки
+        }        
         instance = this;      
     }
 
